@@ -14,17 +14,20 @@ const { mongoURI: db } = require("../config/keys.js");
 
 mongoose.connect(db, { useNewUrlParser: true });
 
-mongoose
-  .connect(db, { useNewUrlParser: true })
-  .then(() => {
-    // Use `debug` instead of `dbLogger` if you did not split the debug
-    // console into `dbLogger` and `serverLogger` above.
-    dbLogger("Connected to MongoDB successfully");
-    server.listen(port);
-  })
-  // Use `debug` instead of `serverLogger` if you did not split the debug
-  // console into `dbLogger` and `serverLogger` above.
-  .catch((err) => serverLogger(err));
+
+
+
+// mongoose
+//   .connect(db, { useNewUrlParser: true })
+//   .then(() => {
+//     // Use `debug` instead of `dbLogger` if you did not split the debug
+//     // console into `dbLogger` and `serverLogger` above.
+//     dbLogger("Connected to MongoDB successfully");
+//     server.listen(port);
+//   })
+//   // Use `debug` instead of `serverLogger` if you did not split the debug
+//   // console into `dbLogger` and `serverLogger` above.
+//   .catch((err) => serverLogger(err));
 
 /**
  * Get port from environment and store in Express.
@@ -106,3 +109,35 @@ function onListening() {
     : 'port ' + addr.port;
   debug('Listening on ' + bind);
 }
+
+mongoose
+  .connect(db, { useNewUrlParser: true })
+  .then(() => {
+    console.log("Connected to MongoDB successfully");
+    insertSeeds();
+  })
+  .catch((err) => {
+    console.error(err.stack);
+    process.exit(1);
+  });
+
+const insertSeeds = () => {
+  console.log("Resetting db and seeding users and tweets...");
+
+  User.collection
+    .drop()
+    .then(() => Tweet.collection.drop())
+    .then(() => User.insertMany(users))
+    .then(() => Tweet.insertMany(tweets))
+    .then(() => {
+      console.log("Done!");
+      mongoose.disconnect();
+    })
+    .catch((err) => {
+      console.error(err.stack);
+      process.exit(1);
+    });
+};
+
+
+
